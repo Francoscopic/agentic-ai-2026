@@ -19,9 +19,11 @@ def get_public_ip_info2():
     url = "https://api.ipify.org?format=json"
     with httpx.Client(timeout=5) as client:
         resp = client.get(url)
-        resp.raise_for_status()
+        resp.raise_for_status() # raises HTTPError on 4xx/5xx
         return resp.json()
 
 if __name__ == "__main__":
     data = get_public_ip_info()
+    print(data)
+    data = get_public_ip_info2()
     print(data)
