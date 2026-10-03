@@ -24,17 +24,21 @@ def timer(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         # TODO: record start time
+        start_time = time.time()
         # TODO: call func(*args, **kwargs) and store the result
+        result = func(*args, **kwargs)
         # TODO: record end time, print the elapsed duration
+        end_time = time.time()
+        print(f"Elapsed time: {end_time - start_time}")
         # TODO: return the result
-        raise NotImplementedError
+        return result
     return wrapper
 
 
 @timer
 def slow_add(a, b):
     time.sleep(0.5)
-    return a + b
+    return a ** b
 
 
 # ---------------------------------------------------------------------------
@@ -54,10 +58,16 @@ def retry(times=3):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             # TODO: loop up to `times` attempts
-            # TODO: try calling func(*args, **kwargs); return on success
-            # TODO: on exception, print which attempt failed, then continue
+            for i in range(times):
+                # TODO: try calling func(*args, **kwargs); return on success
+                try:
+                    result = func(*args, **kwargs)
+                    return result
+                except ValueError as ve:
+                    # TODO: on exception, print which attempt failed, then continue
+                    print(f"Attempt {i+1} failed.")
             # TODO: after the loop, if every attempt failed, re-raise
-            raise NotImplementedError
+            raise RuntimeError("All attempts failed")
         return wrapper
     return decorator
 
@@ -85,10 +95,13 @@ def log_args(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         # TODO: print call info before running func
+        print(f"Call function: {func.__name__}")
         # TODO: call func, capture result
+        result = func(*args, **kwargs)
         # TODO: print result
+        print(result)
         # TODO: return result
-        raise NotImplementedError
+        return result
     return wrapper
 
 
@@ -105,6 +118,7 @@ def greet(name):
 # stacking order below. Then run it and check yourself.
 
 # TODO: your prediction here as a comment
+# @timer runs first, then @log_args, then the function
 
 @timer
 @log_args
@@ -123,25 +137,30 @@ def stacked_example(x):
 class CountCalls:
     def __init__(self, func):
         # TODO: store func, initialize self.count = 0
+        self.func = func
+        self.count = 0
         # TODO: functools.wraps doesn't work directly on class __init__;
-        #       use functools.update_wrapper(self, func) instead
-        raise NotImplementedError
+        # TODO: use functools.update_wrapper(self, func) instead
+        functools.update_wrapper(self, func)
 
     def __call__(self, *args, **kwargs):
         # TODO: increment self.count
+        self.count += 1
         # TODO: call and return the wrapped function's result
-        raise NotImplementedError
+        result = self.func(*args, **kwargs)
+        print(f"{self.func.__name__}(), with result: {result}, was called {self.count} times")
+        return result
 
 
 @CountCalls
-def ping():
-    return "pong"
+def ping(act):
+    return "pong-" + str(act)
 
 
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
     print("\n--- Exercise 1: timer ---")
-    print(slow_add(2, 3))
+    print(slow_add(5054675, 2))
 
     print("\n--- Exercise 2: retry ---")
     print(flaky())
@@ -153,7 +172,7 @@ if __name__ == "__main__":
     print(stacked_example(5))
 
     print("\n--- Exercise 5: class-based decorator ---")
-    ping()
-    ping()
-    ping()
+    ping("rang")
+    ping("wang")
+    ping("yang")
     print(f"ping() was called {ping.count} times")
